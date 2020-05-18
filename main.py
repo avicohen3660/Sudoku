@@ -1,4 +1,6 @@
+import time
 from tkinter import *
+import random
 
 boardStartPoint = (0, 0)
 boardEndPoint = (500, 500)
@@ -7,20 +9,20 @@ finishedSquares=0
 g=3
 data=[]
 for _ in range(9):
-    a=[]
+    a = []
     for _ in range(9):
         a.append(0)
     data.append(a)
 
 possible=[]
 for _ in range(9):
-    a=[]
+    a = []
     for _ in range(9):
         a.append([])
     possible.append(a)
 
 board = [
-    [7,8,0,4,0,0,1,2,0],
+    [7,0,0,4,0,0,1,2,0],
     [0,0,0,0,7,5,0,0,9],
     [0,0,0,6,0,1,0,7,0],
     [0,0,7,0,4,0,0,6,0],
@@ -28,7 +30,7 @@ board = [
     [9,0,4,0,0,0,0,0,5],
     [0,7,0,3,0,0,0,1,2],
     [1,2,0,0,0,7,4,0,0],
-    [0,0,9,2,0,6,0,0,0]
+    [0,0,9,2,1,6,8,5,7]
 ]
 
 def drawBoard():
@@ -43,33 +45,94 @@ def put(x,y,num,color="black"):
     data[x][y] = num
     global finishedSquares
     finishedSquares += 1
+    if color!="black":
+        # root.update()
+        # time.sleep(1/10)
+        pass
+
+def getPossible():
+    pos=[[[] for _ in range(9)] for _ in range(9)]
+    for i in range(9):
+        for j in range(9):
+            if data[i][j] != 0:
+                continue
+            col = data[i]
+            row = [t[j] for t in data]
+            pos[i][j] = []
+            for number in range(1, 10):
+                if number in col or number in row:
+                    pass
+                else:
+                    found = False
+                    for ti in range(3 * (i // 3), 3 * (i // 3) + 3):
+                        for tj in range(3 * (j // 3), 3 * (j // 3) + 3):
+                            if number == data[ti][tj]:
+                                found = True
+                                # print("found " + str(number) + " in " + str((ti, tj)))
+                    if not found:
+                        pos[i][j].append(number)
+    return pos
+
+
+def doTrivials():
+    global possible
+    for i in range(9):
+        for j in range(9):
+            if data[i][j] != 0:
+                continue
+            col = data[i]
+            row = [t[j] for t in data]
+            possible[i][j] = []
+            for number in range(1, 10):
+                if number in col or number in row:
+                    pass
+                else:
+                    found = False
+                    for ti in range(3 * (i // 3), 3 * (i // 3) + 3):
+                        for tj in range(3 * (j // 3), 3 * (j // 3) + 3):
+                            if number == data[ti][tj]:
+                                found = True
+                                # print("found " + str(number) + " in " + str((ti, tj)))
+                    if not found:
+                        possible[i][j].append(number)
+            if len(possible[i][j]) == 1:
+                put(i, j, possible[i][j][0], "red")
+
+
+def getMinPos(pos):
+    ar=[]
+    for i in range(9):
+        a=[]
+        for j in range(9):
+            a.append(len(pos[i][j]))
+        ar.append(a)
+    min = 1000
+    mindex = 0, 0
+    for i in range(9):
+        for j in range(9):
+            if ar[i][j] != 0 and ar[i][j] < min:
+                mindex = i, j
+                min = ar[i][j]
+                if min == 1:
+                    return mindex
+    return mindex
 
 
 def solve():
-    while finishedSquares<81:
-        for i in range(9):
-            for j in range(9):
-                if data[i][j] != 0:
-                    continue
-                col = data[i]
-                row = [t[j] for t in data]
-                possible[i][j]=[]
-                for number in range(1,10):
-                    if number in col or number in row:
-                        pass
-                    else:
-                        found = False
-                        for ti in range(3 * (i // 3), 3 * (i // 3) + 3):
-                            for tj in range(3 * (j // 3), 3 * (j // 3) + 3):
-                                if number == data[ti][tj]:
-                                    found = True
-                                    # print("found " + str(number) + " in " + str((ti, tj)))
-                        if not found:
-                            possible[i][j].append(number)
-                if len(possible[i][j]) == 1:
-                    put(i,j,possible[i][j][0],"red")
-        print(finishedSquares)
+    while finishedSquares < 81:
+        startFinished = finishedSquares
+        doTrivials()
+        if finishedSquares == startFinished:
+            tempfinishedSquares = finishedSquares
+            tempPos = getPossible()
+            i, j = getMinPos(tempPos)
+            tempData = data.copy()
+            num = tempPos[i][j][0]
+            tempData[i][j] = num
 
+            break
+            # pass
+        print(finishedSquares)
 
 
 if __name__ == '__main__':
